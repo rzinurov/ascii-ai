@@ -6,6 +6,7 @@ import (
 	"ascii-ai/store"
 	"ascii-ai/ui"
 	"log"
+	"sync"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -37,32 +38,6 @@ func initScreen() tcell.Screen {
 	return s
 }
 
-func nextImage(imageStore *store.ImageStore, canvas *ui.Canvas, console *ui.Console) {
-	nextImage, filename, err := imageStore.LoadNext()
-	if err != nil {
-		console.Log(err)
-		return
-	}
-	canvas.Show(nextImage)
-	console.Log("Loaded image ", filename)
-}
-
-func generateImage(prompt string, imageGenerator *ai.ImageGenerator, canvas *ui.Canvas, console *ui.Console, imageStore *store.ImageStore) {
-	console.Log("Generating image, this may take a few seconds...")
-	image, err := imageGenerator.Generate(prompt)
-	if err != nil {
-		console.Log(err)
-		return
-	}
-	filename, err := imageStore.Save(image)
-	if err != nil {
-		console.Log(err)
-		return
-	}
-	canvas.Show(image)
-	console.Log("Loaded image ", filename)
-}
-
 func main() {
 	screen := initScreen()
 
@@ -80,20 +55,56 @@ func main() {
 	imageGenerator := ai.NewImageGenerator(config.OpenAi.Token)
 
 	components := make([]ui.Component, 0)
-
 	canvas := ui.NewCanvas(screen, 0, 0, -1, -1)
-
 	console := ui.NewConsole(screen, 0, -5, -1, -1)
-	console.Log("Welcome to ASCII-AI!")
-	console.Log("Press N to load next image, G to generate a new one or C to toggle console")
-
 	components = append(components, canvas, console)
-
 	imageStore := store.NewImageStore(config.ImageFolder)
 
-	nextImage(imageStore, canvas, console)
+	nextImage := func() {
+		nextImage, filename, err := imageStore.LoadNext()
+		if err != nil {
+			console.Log(err)
+			return
+		}
+		canvas.Show(nextImage)
+		console.Log("Loaded image ", filename)
 
-	render(screen, components, false)
+		render(screen, components, false)
+	}
+
+	generateImageMutex := sync.Mutex{}
+	generateImage := func() {
+		if !generateImageMutex.TryLock() {
+			console.Log("Another image generation is in progress, please wait...")
+			return
+		}
+		defer generateImageMutex.Unlock()
+
+		console.Log("Generating image, this may take a few seconds...")
+		image, err := imageGenerator.Generate(imagePrompt)
+		if err != nil {
+			console.Log(err)
+			return
+		}
+		filename, err := imageStore.Save(image)
+		if err != nil {
+			console.Log(err)
+			return
+		}
+		canvas.Show(image)
+		console.Log("Generated image ", filename)
+
+		render(screen, components, false)
+	}
+
+	toggleConsole := func() {
+		console.Toggle()
+		render(screen, components, false)
+	}
+
+	console.Log("Welcome to ASCII-AI!")
+	nextImage()
+	console.Log("Press N to load next image, G to generate a new one, or C to toggle console")
 
 	for {
 		screen.Show()
@@ -107,14 +118,12 @@ func main() {
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 				return
 			} else if ev.Rune() == 'n' {
-				nextImage(imageStore, canvas, console)
+				go nextImage()
 				render(screen, components, false)
 			} else if ev.Rune() == 'g' {
-				generateImage(imagePrompt, imageGenerator, canvas, console, imageStore)
-				render(screen, components, false)
+				go generateImage()
 			} else if ev.Rune() == 'c' {
-				console.Toggle()
-				render(screen, components, false)
+				go toggleConsole()
 			}
 		}
 	}
