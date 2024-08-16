@@ -1,3 +1,4 @@
 openai:
   token: "<Your secret API key>"
+  prompt: "Cat on a synthesizer in space, high detail, realistic light, retrowave, grayscale"
 image_folder: "images"

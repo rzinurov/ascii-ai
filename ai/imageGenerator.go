@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"ascii-ai/config"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -11,19 +12,21 @@ import (
 
 type ImageGenerator struct {
 	openaiClient *openai.Client
+	prompt       string
 }
 
-func NewImageGenerator(token string) *ImageGenerator {
+func NewImageGenerator(openAiConfig config.OpenAiConfig) *ImageGenerator {
 	return &ImageGenerator{
-		openai.NewClient(token),
+		openai.NewClient(openAiConfig.Token),
+		openAiConfig.Prompt,
 	}
 }
 
-func (client *ImageGenerator) Generate(prompt string) (image.Image, error) {
+func (client *ImageGenerator) Generate() (image.Image, error) {
 	ctx := context.Background()
 
 	reqBase64 := openai.ImageRequest{
-		Prompt:         prompt,
+		Prompt:         client.prompt,
 		Size:           openai.CreateImageSize1792x1024,
 		ResponseFormat: openai.CreateImageResponseFormatB64JSON,
 		Model:          openai.CreateImageModelDallE3,

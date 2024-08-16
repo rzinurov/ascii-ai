@@ -7,10 +7,13 @@ import (
 )
 
 type Config struct {
-	OpenAi struct {
-		Token string
-	}
+	OpenAi      OpenAiConfig
 	ImageFolder string
+}
+
+type OpenAiConfig struct {
+	Token  string
+	Prompt string
 }
 
 func Init() Config {
@@ -23,9 +26,13 @@ func Init() Config {
 		}
 	}
 
-	config := Config{}
-	config.OpenAi.Token = viper.GetString("openai.token")
-	config.ImageFolder = viper.GetString("image_folder")
+	config := Config{
+		OpenAi: OpenAiConfig{
+			Token:  viper.GetString("openai.token"),
+			Prompt: viper.GetString("openai.prompt"),
+		},
+		ImageFolder: viper.GetString("image_folder"),
+	}
 
 	return config
 }

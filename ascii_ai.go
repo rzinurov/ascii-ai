@@ -11,8 +11,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-var imagePrompt string = "Cat on a synthesizer in space, high detail, realistic light, retrowave, grayscale"
-
 func render(s tcell.Screen, components []ui.Component, resize bool) {
 	s.Clear()
 	for _, c := range components {
@@ -51,9 +49,7 @@ func main() {
 	defer cleanup()
 
 	config := config.Init()
-
-	imageGenerator := ai.NewImageGenerator(config.OpenAi.Token)
-
+	imageGenerator := ai.NewImageGenerator(config.OpenAi)
 	components := make([]ui.Component, 0)
 	canvas := ui.NewCanvas(screen, 0, 0, -1, -1)
 	console := ui.NewConsole(screen, 0, -5, -1, -1)
@@ -81,7 +77,7 @@ func main() {
 		defer generateImageMutex.Unlock()
 
 		console.Log("Generating image, this may take a few seconds...")
-		image, err := imageGenerator.Generate(imagePrompt)
+		image, err := imageGenerator.Generate()
 		if err != nil {
 			console.Log(err)
 			return
