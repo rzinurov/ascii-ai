@@ -1,15 +1,19 @@
 package main
 
 import (
+	"ascii-ai/ai"
+	"ascii-ai/config"
 	"ascii-ai/ui"
-	"fmt"
 	"image"
 	"log"
 	"os"
-	"time"
+	"path/filepath"
 
 	"github.com/gdamore/tcell/v2"
 )
+
+var imageDirectory string = filepath.Join(".", "images")
+var imagePrompt string = "Cat on a synthesizer in space, high detail, realistic light, retrowave, grayscale"
 
 func render(s tcell.Screen, components []ui.Component, resize bool) {
 	s.Clear()
@@ -21,7 +25,7 @@ func render(s tcell.Screen, components []ui.Component, resize bool) {
 	}
 }
 
-func initScreen() (tcell.Screen, func()) {
+func initScreen() tcell.Screen {
 	s, err := tcell.NewScreen()
 	if err != nil {
 		log.Fatalf("%+v", err)
@@ -33,19 +37,11 @@ func initScreen() (tcell.Screen, func()) {
 	s.SetStyle(defStyle)
 	s.Clear()
 
-	quit := func() {
-		maybePanic := recover()
-		s.Fini()
-		if maybePanic != nil {
-			panic(maybePanic)
-		}
-	}
-
-	return s, quit
+	return s
 }
 
 func openImageFile(imageFilename string) (image.Image, error) {
-	f, err := os.Open(imageFilename)
+	f, err := os.Open(filepath.Join(imageDirectory, imageFilename))
 	if err != nil {
 		return nil, err
 	}
@@ -59,45 +55,92 @@ func openImageFile(imageFilename string) (image.Image, error) {
 	return img, nil
 }
 
+func getImageFileNames() []string {
+	files, err := os.ReadDir(imageDirectory)
+	if err != nil {
+		log.Fatal("Unable to read image files:", err)
+	}
+
+	fileNames := make([]string, 0)
+	for _, file := range files {
+		if !file.IsDir() {
+			fileNames = append(fileNames, file.Name())
+		}
+	}
+	return fileNames
+}
+
+func generateAndShowImage(imageGenerator *ai.ImageGenerator, prompt string, canvas *ui.Canvas, console *ui.Console) {
+	console.Log("Generating image, this may take a few seconds...")
+
+	filename, err := imageGenerator.Generate(prompt)
+
+	if err != nil {
+		log.Fatal("Unable to generate image: ", err)
+	}
+
+	loadAndShowImage(filename, canvas, console)
+}
+
+func loadAndShowImage(filename string, canvas *ui.Canvas, console *ui.Console) {
+	image, err := openImageFile(filename)
+	if err != nil {
+		log.Fatal("Unable to open image file: ", err)
+	}
+	console.Log("Loaded image: ", filename)
+
+	canvas.Show(image)
+}
+
 func main() {
-	s, quit := initScreen()
-	defer quit()
+	screen := initScreen()
+
+	cleanup := func() {
+		maybePanic := recover()
+		screen.Fini()
+		if maybePanic != nil {
+			panic(maybePanic)
+		}
+	}
+	defer cleanup()
+
+	config := config.Init()
+
+	imageGenerator := ai.NewImageGenerator(config.OpenAi.Token, imageDirectory)
 
 	components := make([]ui.Component, 0)
 
-	imgFilename := "cat.jpg"
-	img, err := openImageFile(imgFilename)
-	if err != nil {
-		log.Fatal("Unable to open image file: " + err.Error())
-	}
-	canvas := ui.NewCanvas(s, 0, 0, -1, -1)
+	canvas := ui.NewCanvas(screen, 0, 0, -1, -1)
 
-	console := ui.NewConsole(s, 0, -5, -1, -1)
+	console := ui.NewConsole(screen, 0, -5, -1, -1)
 	console.Log("Welcome to ASCII-AI!")
-	console.Log("Press C to toggle console")
-	time.AfterFunc(1*time.Second, func() {
-		canvas.Show(img)
-		console.Log(fmt.Sprintf("Loaded file %s", imgFilename))
-	})
+	console.Log("Press G to generate a new image or C to toggle console")
 
 	components = append(components, canvas, console)
 
-	render(s, components, false)
+	imageFileNames := getImageFileNames()
+	lastImageFileName := imageFileNames[len(imageFileNames)-1]
+	loadAndShowImage(lastImageFileName, canvas, console)
+
+	render(screen, components, false)
 
 	for {
-		s.Show()
+		screen.Show()
 
-		ev := s.PollEvent()
+		ev := screen.PollEvent()
 
 		switch ev := ev.(type) {
 		case *tcell.EventResize:
-			render(s, components, true)
+			render(screen, components, true)
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 				return
 			} else if ev.Rune() == 'c' {
 				console.Toggle()
-				render(s, components, false)
+				render(screen, components, false)
+			} else if ev.Rune() == 'g' {
+				generateAndShowImage(imageGenerator, imagePrompt, canvas, console)
+				render(screen, components, false)
 			}
 		}
 	}

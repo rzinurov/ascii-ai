@@ -1,0 +1,2 @@
+openai:
+  token: "<Your secret API key>"
