@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/gdamore/tcell/v2"
@@ -24,12 +25,12 @@ func NewConsole(screen tcell.Screen, x1, y1, x2, y2 int) *Console {
 	}
 }
 
-func (c *Console) Log(text string) {
+func (c *Console) Log(a ...any) {
 	if c.nextIndex > len(c.messages)-1 {
 		c.shiftMessages()
 		c.nextIndex = len(c.messages) - 1
 	}
-	c.messages[c.nextIndex] = text
+	c.messages[c.nextIndex] = fmt.Sprint(a...)
 	c.nextIndex++
 	c.Render()
 }
