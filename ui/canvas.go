@@ -33,11 +33,14 @@ func (c *Canvas) Render() {
 }
 
 func (c *Canvas) renderImage() {
-	if c.image != nil {
-		content := c.generateContent()
-		offset := c.getWidth()/2 - len(strings.Split(content, "\n")[0])/2
-		c.drawText(offset, 0, content)
+	if c.image == nil {
+		return
 	}
+	content := c.generateContent()
+	lines := strings.Split(content, "\n")
+	offsetX := c.getWidth()/2 - len(lines[0])/2
+	offsetY := c.getHeight()/2 - len(lines)/2
+	c.drawText(offsetX, offsetY, content)
 }
 
 func (c *Canvas) generateContent() string {
