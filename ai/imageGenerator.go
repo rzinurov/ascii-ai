@@ -15,10 +15,10 @@ type ImageGenerator struct {
 	prompt       string
 }
 
-func NewImageGenerator(openAiConfig config.OpenAiConfig) *ImageGenerator {
+func NewImageGenerator(config config.ImageGeneratorConfig) *ImageGenerator {
 	return &ImageGenerator{
-		openai.NewClient(openAiConfig.Token),
-		openAiConfig.Prompt,
+		openai.NewClient(config.Token),
+		config.Prompt,
 	}
 }
 

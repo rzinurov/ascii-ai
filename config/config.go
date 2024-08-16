@@ -7,13 +7,17 @@ import (
 )
 
 type Config struct {
-	OpenAi      OpenAiConfig
-	ImageFolder string
+	ImageGenerator ImageGeneratorConfig
+	ImageStore     ImageStoreConfig
 }
 
-type OpenAiConfig struct {
+type ImageGeneratorConfig struct {
 	Token  string
 	Prompt string
+}
+
+type ImageStoreConfig struct {
+	Dir string
 }
 
 func Init() Config {
@@ -27,11 +31,13 @@ func Init() Config {
 	}
 
 	config := Config{
-		OpenAi: OpenAiConfig{
-			Token:  viper.GetString("openai.token"),
-			Prompt: viper.GetString("openai.prompt"),
+		ImageGenerator: ImageGeneratorConfig{
+			Token:  viper.GetString("image_generator.token"),
+			Prompt: viper.GetString("image_generator.prompt"),
 		},
-		ImageFolder: viper.GetString("image_folder"),
+		ImageStore: ImageStoreConfig{
+			Dir: viper.GetString("image_store.dir"),
+		},
 	}
 
 	return config

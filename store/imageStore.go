@@ -1,6 +1,7 @@
 package store
 
 import (
+	"ascii-ai/config"
 	"errors"
 	"fmt"
 	"image"
@@ -16,9 +17,9 @@ type ImageStore struct {
 	index int
 }
 
-func NewImageStore(dir string) *ImageStore {
-	os.MkdirAll(dir, os.ModePerm)
-	return &ImageStore{dir, -1}
+func NewImageStore(config config.ImageStoreConfig) *ImageStore {
+	os.MkdirAll(config.Dir, os.ModePerm)
+	return &ImageStore{config.Dir, -1}
 }
 
 func (is *ImageStore) ListFilenames() ([]string, error) {

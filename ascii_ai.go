@@ -49,12 +49,12 @@ func main() {
 	defer cleanup()
 
 	config := config.Init()
-	imageGenerator := ai.NewImageGenerator(config.OpenAi)
+	imageGenerator := ai.NewImageGenerator(config.ImageGenerator)
 	components := make([]ui.Component, 0)
 	canvas := ui.NewCanvas(screen, 0, 0, -1, -1)
 	console := ui.NewConsole(screen, 0, -5, -1, -1)
 	components = append(components, canvas, console)
-	imageStore := store.NewImageStore(config.ImageFolder)
+	imageStore := store.NewImageStore(config.ImageStore)
 
 	nextImage := func() {
 		nextImage, filename, err := imageStore.LoadNext()

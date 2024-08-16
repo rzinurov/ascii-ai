@@ -1,4 +1,5 @@
-openai:
+image_generator:
   token: "<Your secret API key>"
   prompt: "Cat on a synthesizer in space, high detail, realistic light, retrowave, grayscale"
-image_folder: "images"
+image_store:
+  dir: "images"
