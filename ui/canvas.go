@@ -13,8 +13,7 @@ type Canvas struct {
 	image image.Image
 }
 
-func NewCanvas(screen tcell.Screen, x1, y1, x2, y2 int) *Canvas {
-	style := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
+func NewCanvas(screen tcell.Screen, x1, y1, x2, y2 int, style tcell.Style) *Canvas {
 	return &Canvas{
 		NewBaseComponent(screen, Boundaries{x1, y1, x2, y2}, style),
 		nil,

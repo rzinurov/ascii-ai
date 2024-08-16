@@ -14,9 +14,8 @@ type Console struct {
 	visible   bool
 }
 
-func NewConsole(screen tcell.Screen, x1, y1, x2, y2 int) *Console {
+func NewConsole(screen tcell.Screen, x1, y1, x2, y2 int, style tcell.Style) *Console {
 	numRows := int(math.Abs(float64(y2 - y1 - 1)))
-	style := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
 	return &Console{
 		NewBaseComponent(screen, Boundaries{x1, y1, x2, y2}, style),
 		make([]string, numRows),

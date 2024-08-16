@@ -51,8 +51,9 @@ func main() {
 	config := config.Init()
 	imageGenerator := ai.NewImageGenerator(config.ImageGenerator)
 	components := make([]ui.Component, 0)
-	canvas := ui.NewCanvas(screen, 0, 0, -1, -1)
-	console := ui.NewConsole(screen, 0, -5, -1, -1)
+	style := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
+	canvas := ui.NewCanvas(screen, 0, 0, -1, -1, style)
+	console := ui.NewConsole(screen, 0, -5, -1, -1, style)
 	components = append(components, canvas, console)
 	imageStore := store.NewImageStore(config.ImageStore)
 
