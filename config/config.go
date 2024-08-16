@@ -10,6 +10,7 @@ type Config struct {
 	OpenAi struct {
 		Token string
 	}
+	ImageFolder string
 }
 
 func Init() Config {
@@ -24,6 +25,7 @@ func Init() Config {
 
 	config := Config{}
 	config.OpenAi.Token = viper.GetString("openai.token")
+	config.ImageFolder = viper.GetString("image_folder")
 
 	return config
 }
