@@ -10,7 +10,7 @@ Terminal based ASCII image generator backed by DALL·E 3
 
 ## Configuration
 
-In the project root folder create `config.yaml` file based on the provided `config.yaml.example`. 
+In the project root folder create `config.yaml` file based on the provided `config.yaml.example`.
 
 Fill in the OpenAI API token value, which can be obtained [here](https://platform.openai.com/api-keys).
 
@@ -18,6 +18,12 @@ Fill in the OpenAI API token value, which can be obtained [here](https://platfor
 
 ```
 go run .
+```
+
+## Test
+
+```
+go test -v ./..
 ```
 
 ## Demo
