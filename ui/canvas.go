@@ -13,7 +13,7 @@ type Canvas struct {
 	image image.Image
 }
 
-var terminalSymbolAspectRatio = 1.5
+var terminalSymbolAspectRatio = 2.0
 
 func NewCanvas(screen tcell.Screen, x1, y1, x2, y2 int, style tcell.Style) *Canvas {
 	return &Canvas{
