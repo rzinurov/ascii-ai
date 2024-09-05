@@ -48,9 +48,29 @@ func (ms *mockScreen) toString() string {
 func TestRender(t *testing.T) {
 	s := tcell.StyleDefault
 
-	imageWhite4x4 := image.NewRGBA(image.Rect(0, 0, 4, 4))
 	white := color.RGBA{255, 255, 255, 255}
+
+	imageWhite4x4 := image.NewRGBA(image.Rect(0, 0, 4, 4))
 	draw.Draw(imageWhite4x4, imageWhite4x4.Bounds(), &image.Uniform{white}, image.Point{}, draw.Src)
+
+	imageWhite4x2 := image.NewRGBA(image.Rect(0, 0, 4, 2))
+	draw.Draw(imageWhite4x2, imageWhite4x2.Bounds(), &image.Uniform{white}, image.Point{}, draw.Src)
+
+	imageWhite2x4 := image.NewRGBA(image.Rect(0, 0, 2, 4))
+	draw.Draw(imageWhite2x4, imageWhite2x4.Bounds(), &image.Uniform{white}, image.Point{}, draw.Src)
+
+	imageGradient16x1 := image.NewRGBA(image.Rect(0, 0, 16, 1))
+	for x := 0; x < 16; x++ {
+		for y := 0; y < 1; y++ {
+			draw.Draw(
+				imageGradient16x1,
+				image.Rectangle{Min: image.Point{x, y}, Max: image.Point{x + 1, y + 1}},
+				&image.Uniform{color.RGBA{uint8(255 / 15 * x), uint8(255 / 15 * x), uint8(255 / 15 * x), 255}},
+				image.Point{},
+				draw.Src,
+			)
+		}
+	}
 
 	subtests := []struct {
 		name                string
@@ -83,7 +103,84 @@ func TestRender(t *testing.T) {
 			width:           4,
 			height:          4,
 			image:           imageWhite4x4,
-			expectedContent: "    \n@@@@\n@@@@\n    ", // terminal symbols are not square
+			expectedContent: "    \n@@@@\n@@@@\n    ",
+		},
+		{
+			name:            "4x4 white scaled down",
+			width:           2,
+			height:          2,
+			image:           imageWhite4x4,
+			expectedContent: "@@\n  ",
+		},
+		{
+			name:            "4x4 white scaled up",
+			width:           6,
+			height:          6,
+			image:           imageWhite4x4,
+			expectedContent: "      \n@@@@@@\n@@@@@@\n@@@@@@\n      \n      ",
+		},
+		{
+			name:            "4x4 white fit width",
+			width:           4,
+			height:          5,
+			image:           imageWhite4x4,
+			expectedContent: "    \n@@@@\n@@@@\n    \n    ",
+		},
+		{
+			name:            "4x4 white fit height",
+			width:           6,
+			height:          4,
+			image:           imageWhite4x4,
+			expectedContent: "@@@@@@\n@@@@@@\n@@@@@@\n      ",
+		},
+		{
+			name:            "2x4 white",
+			width:           2,
+			height:          4,
+			image:           imageWhite2x4,
+			expectedContent: "  \n@@\n@@\n  ",
+		},
+		{
+			name:            "2x4 white scaled down",
+			width:           2,
+			height:          2,
+			image:           imageWhite2x4,
+			expectedContent: "@@\n@@",
+		},
+		{
+			name:            "2x4 white scaled up",
+			width:           6,
+			height:          6,
+			image:           imageWhite2x4,
+			expectedContent: "@@@@@@\n@@@@@@\n@@@@@@\n@@@@@@\n@@@@@@\n@@@@@@",
+		},
+		{
+			name:            "4x2 white",
+			width:           4,
+			height:          2,
+			image:           imageWhite4x2,
+			expectedContent: "@@@@\n    ",
+		},
+		{
+			name:            "4x2 white scaled down",
+			width:           2,
+			height:          2,
+			image:           imageWhite4x2,
+			expectedContent: "@@\n  ",
+		},
+		{
+			name:            "4x2 white scaled up",
+			width:           6,
+			height:          6,
+			image:           imageWhite4x2,
+			expectedContent: "      \n      \n@@@@@@\n      \n      \n      ",
+		},
+		{
+			name:            "4x4 gradient",
+			width:           16,
+			height:          2,
+			image:           imageGradient16x1,
+			expectedContent: " .,:;i1tfLLCG08@\n                ",
 		},
 	}
 
